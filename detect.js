@@ -38,7 +38,26 @@ function getCurrentScript(e) {
         }
     }
 }
+//detect browser
+var uaMatch = function( ua ) {
+    ua = ua.toLowerCase();
+    var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+        /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+        /(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+        /(msie) ([\w.]+)/.exec( ua ) ||
+        ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+        [];
 
+    return {
+        browser: match[ 1 ] || "",
+        version: match[ 2 ] || "0"
+    };
+};
+var getOs = function(){
+    return (navigator.platform || "");
+};
+console.log(uaMatch(navigator.userAgent));
+console.log(getOs());
 // is debug modle
 function isDebug(){
     var search = window.location.search;
@@ -74,6 +93,7 @@ window.DETECT = {
     },
     log:function(info){
         info.screen = screenWidth+'x'+screenHeight;
+        info.href = window.location.href;
         DETECT.beacon(DETECT.toQueryString(info));
     },
     runMethod:function(method){
@@ -122,3 +142,15 @@ window.onerror = function(msg,url,line){
         return true;
     }
 };
+function getClientIp(req) {  
+    var ipAddress;  
+    var forwardedIpsStr = req.header('x-forwarded-for');   
+    if (forwardedIpsStr) {  
+        var forwardedIps = forwardedIpsStr.split(',');  
+        ipAddress = forwardedIps[0];  
+    }  
+    if (!ipAddress) {  
+        ipAddress = req.connection.remoteAddress;  
+    }  
+    return ipAddress;  
+}  
