@@ -90,13 +90,13 @@ var main = {
               user: "hxie@kalengo.com",
               pass: "951178609.com"
             }
-        })
+        });
         var options = {
             from: 'hxie@kalengo.com',
             to: "hxie@kalengo.com",
             subject: "【系统邮件】系统检测到前端页面出问题了",
             html: content
-        }
+        };
         mailServer.sendMail(options,cbf)
     }
 };

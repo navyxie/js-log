@@ -1,6 +1,7 @@
 var screenWidth = window.screen.width;
 var screenHeight = window.screen.height;
 window.DETECTTime = window.DETECTTime || {};
+window.TIME_LINE = window.TIME_LINE || {};
 //get currentscript
 function getCurrentScript(e) {
     var DOC = document;
@@ -47,7 +48,7 @@ function isDebug(){
         search = search.split('&');
         for(var i = 0 , len = search.length ; i < len ; i++){
             var tempArr = search[i].split('=');
-            if(tempArr[0] === 'debug' && tempArr[1] === "true"){
+            if(tempArr[0] === 'debug' && tempArr[1] == 1){
                 debug = true;
                 break;
             }
@@ -56,7 +57,7 @@ function isDebug(){
     return debug
 }
 window.DETECT = {
-    ajaxUrl : '',
+    ajaxUrl : '/qz/shb/detect',
     debug:isDebug(),
     toQueryString:function(o){
         var res = [],p,encode = encodeURIComponent;
@@ -69,9 +70,10 @@ window.DETECT = {
     },
     beacon:function(msg){
         var img = new Image();
-        img.src = DETECT.ajaxUrl+'?'+msg;
+        img.src = DETECT.ajaxUrl+'?'+msg.join('&');
     },
     log:function(info){
+        info.screen = screenWidth+'x'+screenHeight;
         DETECT.beacon(DETECT.toQueryString(info));
     },
     runMethod:function(method){
@@ -84,24 +86,39 @@ window.DETECT = {
                 var info = {
                     msg:ex.message,
                     type:'try-catch',
-                    screenWidth:screenWidth,
-                    screenHeight:screenHeight,
-                    htmlLoadedTime:((window.DETECTTime.endTime || 0) - (window.DETECTTime.startTime || 0))+'ms',
+                    screen:screenWidth+'x'+screenHeight,
                     detailMsg:getCurrentScript(ex)
                 };
                 DETECT.log(info);
             }
         }
+    },
+    timeLog:function(limitSec){
+        var loadTime = window.TIME_LINE.getLogs();
+        var htmlTime = loadTime['htmlLoad'] || 0;
+        if(DETECT.debug || (htmlTime < limitSec*1000)){
+            return this;
+        }else{
+            var info = {
+                type:'timeOut',
+                htmlTime:htmlTime
+            };
+            DETECT.log(info);
+        }
     }
 };
+window.DETECT.timeLog(10);
 window.onerror = function(msg,url,line){
     if(DETECT.debug){
         return false;
     }else{
-        msg = msg || 'window onerror';
-        url = url || 'undefined';
-        line = line || 'undefined';
-        DETECT.log({msg:msg,url:url,line:line,type:'window-onerror'});
+        var errInfo = {
+            msg : msg || 'window onerror',
+            url : url || 'undefined',
+            line : line || 'undefined',
+            type:'window-onerror'
+        };
+        DETECT.log(errInfo);
         return true;
     }
 };
